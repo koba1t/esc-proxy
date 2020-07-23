@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: esc-proxy
+  name: esc-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: esc-proxy
+  template:
+    metadata:
+      labels:
+        app: esc-proxy
+    spec:
+      containers:
+      - env:
+        - name: TARGET_NAMESPACE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: LOCAL_CLUSTER_DOMAIN
+          value: cluster.local
+        - name: USERNAME_HEADER
+          value: X-Auth-Request-User
+        - name: ESC_TEMPLATE_NAME
+          value: vscode # template name on esc
+        image: quay.io/koba1t/esc-proxy
+        imagePullPolicy: Always
+        name: esc-proxy
+        ports:
+        - containerPort: 80
+          protocol: TCP
