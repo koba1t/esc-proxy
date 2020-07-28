@@ -43,22 +43,15 @@ func main() {
 		fmt.Printf("ReverseProxy for %s\n", req.URL.Host)
 	}
 
-	modifyResponse := func(res *http.Response) error {
-		fmt.Println("modifyResponse called")
-		return nil
-	}
-
 	errorHandle := func(rw http.ResponseWriter, req *http.Request, err error) {
-		fmt.Printf("http: proxy error: %v\n", err)
-		fmt.Println("ErrorHandle called")
+		fmt.Printf("[ErrorHandle] http: proxy error: %v\n", err)
 		rw.WriteHeader(http.StatusBadGateway)
 		//https://golang.org/pkg/net/http/
 	}
 
 	rp := &httputil.ReverseProxy{
-		Director:       director,
-		ModifyResponse: modifyResponse,
-		ErrorHandler:   errorHandle,
+		Director:     director,
+		ErrorHandler: errorHandle,
 	}
 
 	srv := &http.Server{
