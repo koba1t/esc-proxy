@@ -82,7 +82,10 @@ func main() {
 				TemplateName: escTemplateName,
 			},
 		}
-		_ = cl.Create(context.Background(), escuser)
+		e := cl.Create(context.Background(), escuser)
+		if e != nil {
+			fmt.Printf("Userland create error: %v\n", e)
+		}
 
 		rw.WriteHeader(http.StatusBadGateway)
 		//https://golang.org/pkg/net/http/
