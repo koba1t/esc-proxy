@@ -51,7 +51,7 @@ func main() {
 
 	// create k8s client
 	ctx := context.Background()
-	cl, err := client.New(config.GetConfigOrDie(), client.Options{})
+	cl, err := client.New(config.GetConfigOrDie(), client.Options{Scheme: scheme})
 	if err != nil {
 		fmt.Println("failed to create client")
 		os.Exit(1)
