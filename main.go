@@ -10,6 +10,7 @@ import (
 	"os"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
@@ -37,6 +38,12 @@ func main() {
 	escTemplateName := os.Getenv("ESC_TEMPLATE_NAME")
 	if escTemplateName == "" {
 		log.Fatal("template name is not set")
+	}
+
+	// init scheme
+	err := escv1alpha1.AddToScheme(runtime.NewScheme())
+	if err != nil {
+		fmt.Printf("unable AddToScheme esc: %v\n", err)
 	}
 
 	// create k8s client
