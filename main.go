@@ -19,6 +19,15 @@ import (
 	//https://pkg.go.dev/github.com/cenkalti/backoff/v4?tab=doc
 )
 
+var (
+	scheme = runtime.NewScheme()
+)
+
+func init() {
+	// init scheme
+	_ = escv1alpha1.AddToScheme(scheme)
+}
+
 func main() {
 	usernameHeader := os.Getenv("USERNAME_HEADER")
 	if usernameHeader == "" {
@@ -38,12 +47,6 @@ func main() {
 	escTemplateName := os.Getenv("ESC_TEMPLATE_NAME")
 	if escTemplateName == "" {
 		log.Fatal("template name is not set")
-	}
-
-	// init scheme
-	err := escv1alpha1.AddToScheme(runtime.NewScheme())
-	if err != nil {
-		fmt.Printf("unable AddToScheme esc: %v\n", err)
 	}
 
 	// create k8s client
