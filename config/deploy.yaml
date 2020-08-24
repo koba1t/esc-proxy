@@ -26,7 +26,7 @@ spec:
           value: X-Auth-Request-User
         - name: ESC_TEMPLATE_NAME
           value: vscode # template name on esc
-        image: quay.io/koba1t/esc-proxy:feature_create_esc_user_when_user_container_not_found
+        image: quay.io/koba1t/esc-proxy:master
         imagePullPolicy: Always
         name: esc-proxy
         ports:
