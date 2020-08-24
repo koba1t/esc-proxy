@@ -2,12 +2,31 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"net/http/httputil"
 	"os"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/config"
+
+	escv1alpha1 "github.com/koba1t/ESC/api/v1alpha1"
+	//https://pkg.go.dev/github.com/cenkalti/backoff/v4?tab=doc
 )
+
+var (
+	scheme = runtime.NewScheme()
+)
+
+func init() {
+	// init scheme
+	_ = escv1alpha1.AddToScheme(scheme)
+}
 
 func main() {
 	usernameHeader := os.Getenv("USERNAME_HEADER")
@@ -30,6 +49,21 @@ func main() {
 		log.Fatal("template name is not set")
 	}
 
+	// create k8s client
+	ctx := context.Background()
+	cl, err := client.New(config.GetConfigOrDie(), client.Options{Scheme: scheme})
+	if err != nil {
+		fmt.Println("failed to create client")
+		os.Exit(1)
+	}
+	userland := &escv1alpha1.Userland{}
+	nn := client.ObjectKey{
+		Namespace: "default",
+		Name:      "name",
+	}
+	_ = cl.Get(ctx, nn, userland)
+
+	// Reverse proxy director
 	director := func(req *http.Request) {
 		username := req.Header.Get(usernameHeader)
 		if username == "" {
@@ -45,7 +79,26 @@ func main() {
 
 	errorHandle := func(rw http.ResponseWriter, req *http.Request, err error) {
 		fmt.Printf("[ErrorHandle] http: proxy error: %v\n", err)
-		rw.WriteHeader(http.StatusBadGateway)
+
+		username := req.Header.Get(usernameHeader)
+
+		// create userland resource
+		escuser := &escv1alpha1.Userland{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: namespaceName,
+				Name:      username,
+			},
+			Spec: escv1alpha1.UserlandSpec{
+				TemplateName: escTemplateName,
+			},
+		}
+		e := cl.Create(context.Background(), escuser)
+		if e != nil {
+			fmt.Printf("Userland create error: %v\n", e)
+		}
+
+		rw.WriteHeader(http.StatusOK)
+		rw.Write([]byte("<html><head><meta http-equiv=\"Refresh\" content=\"10\">Creating container.</head><body>"))
 		//https://golang.org/pkg/net/http/
 	}
 
