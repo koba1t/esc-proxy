@@ -97,7 +97,8 @@ func main() {
 			fmt.Printf("Userland create error: %v\n", e)
 		}
 
-		rw.WriteHeader(http.StatusBadGateway)
+		rw.WriteHeader(http.StatusOK)
+		rw.Write([]byte("<html><head><meta http-equiv=\"Refresh\" content=\"10\">Creating container.</head><body>"))
 		//https://golang.org/pkg/net/http/
 	}
 
